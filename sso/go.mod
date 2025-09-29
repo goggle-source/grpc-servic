@@ -1,3 +1,3 @@
-module github.com/grpc-servic/sso
+module github.com/goggle-source/grpc-servic/sso
 
 go 1.22.2
