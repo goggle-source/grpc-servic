@@ -13,8 +13,6 @@ func main() {
 	log := SetupLogger(cfg.Env)
 	log.Info("starting server")
 
-	//TODO: logger (slog)
-
 	//TODO: app
 
 	//TODO: run grpc-server
