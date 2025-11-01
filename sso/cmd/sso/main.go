@@ -16,7 +16,7 @@ func main() {
 	log := SetupLogger(cfg.Env)
 	log.Info("start server", slog.Int("port", cfg.GRPC.Port))
 
-	application := app.NewApp(log, cfg.GRPC.Port, cfg.StoragePath, cfg.TokenTTL)
+	application := app.NewApp(log, cfg.GRPC.Port, *cfg, cfg.TokenTTL)
 
 	go application.GRPCServer.MustRun()
 

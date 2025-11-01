@@ -1,10 +1,12 @@
-package auth
+package Grpcauth
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	ssov1 "github.com/goggle-source/grpc-servic/protos/gen/go/sso"
+	"github.com/goggle-source/grpc-servic/sso/internal/services/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,10 +51,15 @@ func (s *ServerAPI) Login(ctx context.Context, req *ssov1.LoginRequest) (*ssov1.
 		return nil, err
 	}
 
-	token, err := s.auth.Login(ctx, req.GetEmail(), req.GetPassword(), int(req.GetAppId()))
+	token, err := s.auth.Login(ctx, req.GetEmail(), req.GetPassword(), int64(req.GetAppId()))
 
 	if err != nil {
-		//TODO: add proverok
+		if errors.Is(err, auth.ErrInvalidCredentials) {
+			return nil, status.Error(codes.Internal, "error credentails")
+		}
+		if errors.Is(err, auth.ErrAppNotFound) {
+			return nil, status.Error(codes.NotFound, "app is not found")
+		}
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -68,7 +75,9 @@ func (s *ServerAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (*
 
 	userID, err := s.auth.Register(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
-		//TODO: ...
+		if errors.Is(err, auth.ErrUserExists) {
+			return nil, status.Error(codes.AlreadyExists, "user alredy exists")
+		}
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -84,7 +93,9 @@ func (s *ServerAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ss
 
 	isAdmin, err := s.auth.IsAdmin(ctx, req.GetUserId())
 	if err != nil {
-		//TODO: ...
+		if errors.Is(err, auth.ErrAppNotFound) {
+			return nil, status.Error(codes.NotFound, "app is not found")
+		}
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -97,8 +108,13 @@ func ValidateLogin(req *ssov1.LoginRequest) error {
 	if req.GetEmail() == "" || !strings.Contains(req.GetEmail(), "@") {
 		return status.Error(codes.InvalidArgument, "email is required")
 	}
-	if req.GetPassword() == "" || len(req.GetPassword()) > 5 {
+
+	if req.GetPassword() == "" {
 		return status.Error(codes.InvalidArgument, "password is required")
+	}
+
+	if len(req.GetPassword()) < 7 {
+		return status.Error(codes.InvalidArgument, "password must be at least 10 characters")
 	}
 
 	if req.GetAppId() == emptyID {
@@ -112,8 +128,13 @@ func ValidateRegister(req *ssov1.RegisterRequest) error {
 	if req.GetEmail() == "" || !strings.Contains(req.GetEmail(), "@") {
 		return status.Error(codes.InvalidArgument, "email is required")
 	}
-	if req.GetPassword() == "" || len(req.GetPassword()) > 5 {
+
+	if req.GetPassword() == "" {
 		return status.Error(codes.InvalidArgument, "password is required")
+	}
+
+	if len(req.GetPassword()) < 7 {
+		return status.Error(codes.InvalidArgument, "password must be at least 10 characters")
 	}
 
 	return nil

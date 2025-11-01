@@ -8,5 +8,6 @@ type User struct {
 
 type App struct {
 	ID     int64
+	Name   string
 	Secret string
 }

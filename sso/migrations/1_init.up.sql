@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS users
+(
+    id BIGSERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    pass_hash BYTEA NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_email ON users (email);
+
+CREATE TABLE IF NOT EXISTS apps 
+(
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    secret TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS is_admin
+(
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    admin BOOLEAN
+);

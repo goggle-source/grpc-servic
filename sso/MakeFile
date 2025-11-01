@@ -1,0 +1,6 @@
+runApp:
+	go run cmd/sso/main.go -config=config/
+
+runTestMigrations:
+	go run cmd/migrator/main.go --migrations-table=migrations_test --migrations-path=./test/migrations
+

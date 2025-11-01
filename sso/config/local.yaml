@@ -1,7 +1,12 @@
 env: "local" #prod
-storage_path: "./storage/sso.db"
 token_ttl: 30m
 grpc-server:
   port: 8082
   timeout: 10s
+database:
+  host: localhost
+  user: admin
+  password: mypassword
+  dbname: db_auth
+  port: 5432
 
